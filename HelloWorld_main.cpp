@@ -32,6 +32,8 @@ int main(int argc, char** argv)
     int type = 1;
     int count = 1;
     long sleep = 100;
+    const char* pubfile;
+    const char* subfile;
     if(argc > 1)
     {
         if(strcmp(argv[1],"publisher")==0)
@@ -39,15 +41,22 @@ int main(int argc, char** argv)
             type = 1;
             if (argc >= 3)
             {
-                count = atoi(argv[2]);
+                /*count = atoi(argv[2]);
                 if (argc == 4)
                 {
                     sleep = atoi(argv[3]);
-                }
+                }*/
+		pubfile = argv[2];
             }
         }
-        else if(strcmp(argv[1],"subscriber")==0)
-            type = 2;
+        else if(strcmp(argv[1],"subscriber")==0){
+		type = 2;
+		 if (argc >= 3)
+            	{
+			subfile = argv[2];
+           	 }
+	}
+            
     }
     else
     {
@@ -61,7 +70,7 @@ int main(int argc, char** argv)
         case 1:
             {
                 HelloWorldPublisher mypub;
-                if(mypub.init())
+                if(mypub.init(pubfile))
                 {
                     mypub.run(count, sleep);
                 }
@@ -70,7 +79,7 @@ int main(int argc, char** argv)
         case 2:
             {
                 HelloWorldSubscriber mysub;
-                if(mysub.init())
+                if(mysub.init(subfile))
                 {
 		        mysub.run();
                 }

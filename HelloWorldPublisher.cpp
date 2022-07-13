@@ -38,13 +38,14 @@ HelloWorldPublisher::HelloWorldPublisher()
 {
 }
 
-bool HelloWorldPublisher::init()
+bool HelloWorldPublisher::init(const char* filename)
 {
     //char Data[2048];
     std::ifstream  infile;
     //std::stringstream ss;
     std::string ss;
-    infile.open("/home/wsm/test/time", std::ios::binary | std::ios::in);
+    //infile.open("/home/wsm/test/time", std::ios::binary | std::ios::in);
+    infile.open(filename, std::ios::binary | std::ios::in);
     infile.seekg(0, std::ios_base::end);
     std::streampos sp = infile.tellg();
     int size = sp;

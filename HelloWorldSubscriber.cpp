@@ -32,15 +32,16 @@
 using namespace eprosima::fastrtps;
 using namespace eprosima::fastrtps::rtps;
 
-
+const char* subfilename;
 HelloWorldSubscriber::HelloWorldSubscriber()
     : mp_participant(nullptr)
     , mp_subscriber(nullptr)
 {
 }
 
-bool HelloWorldSubscriber::init()
+bool HelloWorldSubscriber::init(const char* filename)
 {
+    subfilename = filename;
     ParticipantAttributes PParam;
     PParam.rtps.builtin.discovery_config.discoveryProtocol = DiscoveryProtocol_t::SIMPLE;
     PParam.rtps.builtin.discovery_config.use_SIMPLE_EndpointDiscoveryProtocol = true;
@@ -112,7 +113,8 @@ void HelloWorldSubscriber::SubListener::onNewDataMessage(
     std::ofstream  outfile;
     std::stringstream ss;
     std::string s;
-    outfile.open("/home/wsm/test/time2", std::ios::binary | std::ios::out);  
+    //outfile.open("/home/wsm/test/time2", std::ios::binary | std::ios::out);  
+    outfile.open(subfilename, std::ios::binary | std::ios::out); 
 
     if (sub->takeNextData((void*)&m_Hello, &m_info))
     {
@@ -138,7 +140,8 @@ void HelloWorldSubscriber::SubListener::onNewDataMessage(
 		
    		 outfile.close();
             	std::cout << "Message " << m_Hello.message() << " size=" << m_Hello.index() << " RECEIVED" << std::endl;
-		int stat = chmod("/home/wsm/test/time2", S_IREAD | S_IWRITE | S_IEXEC);
+		//int stat = chmod("/home/wsm/test/time2", S_IREAD | S_IWRITE | S_IEXEC);
+		int stat = chmod(subfilename, S_IREAD | S_IWRITE | S_IEXEC);
 		if (!stat)
      		 	std::cout << "chmod a+x "<< std::endl;
 	}

@@ -39,7 +39,7 @@ public:
     HelloWorldSubscriber();
     virtual ~HelloWorldSubscriber();
     //!Initialize the subscriber
-    bool init();
+    bool init(const char* filename);
     //!RUN the subscriber
     void run();
     //!Run the subscriber until number samples have been received.
