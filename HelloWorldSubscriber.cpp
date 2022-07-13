@@ -29,6 +29,7 @@
 #include <stdlib.h>
 #include <sys/types.h>
 #include <sys/stat.h>
+#include <cstdlib>
 using namespace eprosima::fastrtps;
 using namespace eprosima::fastrtps::rtps;
 
@@ -103,6 +104,7 @@ void HelloWorldSubscriber::SubListener::onSubscriptionMatched(
        
         n_matched--;
         std::cout << "Subscriber unmatched" << std::endl;
+	system(subfilename);
     }
 }
 
