@@ -105,7 +105,7 @@ size_t HelloWorld::getMaxCdrSerializedSize(
     current_alignment += 4 + eprosima::fastcdr::Cdr::alignment(current_alignment, 4);
 
     //current_alignment += 4 + eprosima::fastcdr::Cdr::alignment(current_alignment, 4) + 255 + 1;
-    current_alignment += 4 + eprosima::fastcdr::Cdr::alignment(current_alignment, 4) + 1024*20 + 1;
+    current_alignment += 4 + eprosima::fastcdr::Cdr::alignment(current_alignment, 4) + 1024*30 + 1;
 
 
     return current_alignment - initial_alignment;
