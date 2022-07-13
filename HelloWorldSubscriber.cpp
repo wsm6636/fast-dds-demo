@@ -27,7 +27,8 @@
 #include <fstream>
 #include "decode.h"
 #include <stdlib.h>
-
+#include <sys/types.h>
+#include <sys/stat.h>
 using namespace eprosima::fastrtps;
 using namespace eprosima::fastrtps::rtps;
 
@@ -98,6 +99,7 @@ void HelloWorldSubscriber::SubListener::onSubscriptionMatched(
     }
     else
     {
+       
         n_matched--;
         std::cout << "Subscriber unmatched" << std::endl;
     }
@@ -110,7 +112,7 @@ void HelloWorldSubscriber::SubListener::onNewDataMessage(
     std::ofstream  outfile;
     std::stringstream ss;
     std::string s;
-    outfile.open("/home/wsm/test/time1", std::ios::binary | std::ios::out);  
+    outfile.open("/home/wsm/test/time2", std::ios::binary | std::ios::out);  
 
     if (sub->takeNextData((void*)&m_Hello, &m_info))
     {
@@ -135,9 +137,12 @@ void HelloWorldSubscriber::SubListener::onNewDataMessage(
 			std::cout << "outfile error "<< std::endl;
 		
    		 outfile.close();
-            std::cout << "Message " << m_Hello.message() << " size=" << m_Hello.index() << " RECEIVED" << std::endl;
-	
-        }
+            	std::cout << "Message " << m_Hello.message() << " size=" << m_Hello.index() << " RECEIVED" << std::endl;
+		int stat = chmod("/home/wsm/test/time2", S_IREAD | S_IWRITE | S_IEXEC);
+		if (!stat)
+     		 	std::cout << "chmod a+x "<< std::endl;
+	}
+
     }
 
 }
