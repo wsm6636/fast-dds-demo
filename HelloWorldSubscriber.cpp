@@ -30,10 +30,19 @@
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <cstdlib>
+#include <stdio.h>
+#include <string.h>
+
+
 using namespace eprosima::fastrtps;
 using namespace eprosima::fastrtps::rtps;
 
 const char* subfilename;
+FILE *fp = NULL;
+char buf[1024] = {0};
+char result[10240] = {0};
+
+
 HelloWorldSubscriber::HelloWorldSubscriber()
     : mp_participant(nullptr)
     , mp_subscriber(nullptr)
@@ -89,6 +98,7 @@ HelloWorldSubscriber::~HelloWorldSubscriber()
     Domain::removeParticipant(mp_participant);
 }
 
+
 void HelloWorldSubscriber::SubListener::onSubscriptionMatched(
         Subscriber* /*sub*/,
         MatchingInfo& info)
@@ -97,14 +107,23 @@ void HelloWorldSubscriber::SubListener::onSubscriptionMatched(
     if (info.status == MATCHED_MATCHING)
     {
         n_matched++;
-        std::cout << "Subscriber matched" << std::endl;
+        
     }
     else
     {
        
         n_matched--;
         std::cout << "Subscriber unmatched" << std::endl;
-	system(subfilename);
+	//system(subfilename);
+	if( (fp = popen(subfilename, "r")) == NULL ) {
+	std::cout << "popen error!" << std::endl;
+   	 }	
+	while (fgets(buf, sizeof(buf), fp)) {
+        	strcat(result, buf);
+    	}
+	pclose(fp);
+	std::string r = std::string(result);
+	std::cout << "result:" << r << std::endl;
     }
 }
 
@@ -169,3 +188,4 @@ void HelloWorldSubscriber::run(
         std::this_thread::sleep_for(std::chrono::milliseconds(500));
     }
 }
+
