@@ -40,8 +40,10 @@ public:
     virtual ~HelloWorldSubscriber();
     //!Initialize the subscriber
     bool init(const char* filename);
+    bool init();
     //!RUN the subscriber
     void run();
+    void runn();
     //!Run the subscriber until number samples have been received.
     void run(
             uint32_t number);
@@ -71,6 +73,8 @@ public:
                 eprosima::fastrtps::Subscriber* sub,
                 eprosima::fastrtps::rtps::MatchingInfo& info);
         void onNewDataMessage(
+                eprosima::fastrtps::Subscriber* sub);
+	void reDataMessage(
                 eprosima::fastrtps::Subscriber* sub);
         HelloWorld m_Hello;
         eprosima::fastrtps::SampleInfo_t m_info;

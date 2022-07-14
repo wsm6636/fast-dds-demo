@@ -29,6 +29,13 @@
 #include <fstream>
 #include "encode.h"
 #include <stdlib.h>
+
+#include "HelloWorldSubscriber.h"
+#include <fastrtps/participant/Participant.h>
+#include <fastrtps/attributes/ParticipantAttributes.h>
+#include <fastrtps/attributes/SubscriberAttributes.h>
+#include <fastrtps/subscriber/Subscriber.h>
+#include <fastrtps/Domain.h>
 using namespace eprosima::fastrtps;
 using namespace eprosima::fastrtps::rtps;
 
@@ -101,7 +108,48 @@ bool HelloWorldPublisher::init(const char* filename)
     return true;
 
 }
+bool HelloWorldPublisher::init(unsigned long index , std::string message)
+{
+    m_Hello.index(index);
+    m_Hello.message(message);
+    ParticipantAttributes PParam;
+    PParam.rtps.builtin.discovery_config.discoveryProtocol = DiscoveryProtocol_t::SIMPLE;
+    PParam.rtps.builtin.discovery_config.use_SIMPLE_EndpointDiscoveryProtocol = true;
+    PParam.rtps.builtin.discovery_config.m_simpleEDP.use_PublicationReaderANDSubscriptionWriter = true;
+    PParam.rtps.builtin.discovery_config.m_simpleEDP.use_PublicationWriterANDSubscriptionReader = true;
+    PParam.rtps.builtin.discovery_config.leaseDuration = c_TimeInfinite;
+    PParam.rtps.setName("Participant_pub");
+    mp_participant = Domain::createParticipant(PParam);
 
+    if (mp_participant == nullptr)
+    {
+        return false;
+    }
+    //REGISTER THE TYPE
+
+    Domain::registerType(mp_participant, &m_type);
+
+    //CREATE THE PUBLISHER
+    PublisherAttributes Wparam;
+    Wparam.topic.topicKind = NO_KEY;
+    Wparam.topic.topicDataType = "HelloWorld";
+    Wparam.topic.topicName = "HelloWorldTopicnew";
+    Wparam.topic.historyQos.kind = KEEP_LAST_HISTORY_QOS;
+    Wparam.topic.historyQos.depth = 30;
+    Wparam.topic.resourceLimitsQos.max_samples = 50;
+    Wparam.topic.resourceLimitsQos.allocated_samples = 20;
+    Wparam.times.heartbeatPeriod.seconds = 2;
+    Wparam.times.heartbeatPeriod.nanosec = 200 * 1000 * 1000;
+    Wparam.qos.m_reliability.kind = RELIABLE_RELIABILITY_QOS;
+    mp_publisher = Domain::createPublisher(mp_participant, Wparam, (PublisherListener*)&m_listener);
+    if (mp_publisher == nullptr)
+    {
+        return false;
+    }
+
+    return true;
+
+}
 HelloWorldPublisher::~HelloWorldPublisher()
 {
     // TODO Auto-generated destructor stub
@@ -135,11 +183,12 @@ void HelloWorldPublisher::runThread(
         {
             if (publish(false))
             {
-                std::cout << "Message: " << m_Hello.message() << " with size: " << m_Hello.index() << " SENT" <<
+                std::cout << "Message: " << m_Hello.message() << " with index: " << m_Hello.index() << " SENT" <<
                         std::endl;
             }
             std::this_thread::sleep_for(std::chrono::milliseconds(sleep));
         }
+	
     }
     else
     {
@@ -152,14 +201,37 @@ void HelloWorldPublisher::runThread(
             else
             {
 
-                std::cout << "Message: " << m_Hello.message() << " with size: " << m_Hello.index() << " SENT" <<
+                std::cout << "Message: " << m_Hello.message() << " with index: " << m_Hello.index() << " SENT" <<
                         std::endl;
             }
             std::this_thread::sleep_for(std::chrono::milliseconds(sleep));
         }
+
     }
 }
+void HelloWorldPublisher::runnThread(
+        uint32_t samples,
+        uint32_t sleep)
+{
+    for (uint32_t i = 0; i < samples; ++i)
+        {
+            if (!publish())
+            {
+                --i;
+            }
+            else
+            {
 
+                std::cout << "Message: " << m_Hello.message() << " with index: " << m_Hello.index() << " SENT" <<
+                        std::endl;
+            }
+            std::this_thread::sleep_for(std::chrono::milliseconds(sleep));
+        }
+	 std::cout << "Please press enter to stop the Publisher." << std::endl;
+        std::cin.ignore();
+
+    
+}
 void HelloWorldPublisher::run(
         uint32_t samples,
         uint32_t sleep)
@@ -168,8 +240,8 @@ void HelloWorldPublisher::run(
     std::thread thread(&HelloWorldPublisher::runThread, this, samples, sleep);
     if (samples == 0)
     {
-        std::cout << "Publisher running. Please press enter to stop the Publisher at any time." << std::endl;
-        std::cin.ignore();
+        std::cout << "samples == 0." << std::endl;
+
         stop = true;
     }
     else
@@ -177,7 +249,20 @@ void HelloWorldPublisher::run(
         std::cout << "Publisher running " << samples << " samples." << std::endl;
     }
     thread.join();
+	    HelloWorldSubscriber sub;
+	    if(sub.init())
+               {
+		        sub.runn();
+               }
   
+}
+void HelloWorldPublisher::run()
+{
+
+    std::cout << "subscirber to pub" << std::endl;
+    stop = false;
+    std::thread thread(&HelloWorldPublisher::runnThread, this, 1, 100);
+	 thread.join();
 }
 
 bool HelloWorldPublisher::publish(
@@ -185,7 +270,7 @@ bool HelloWorldPublisher::publish(
 {
     if (m_listener.firstConnected || !waitForListener || m_listener.n_matched > 0)
     {
-        //m_Hello.index(m_Hello.index() + 1);
+        m_Hello.index(m_Hello.index() + 1);
         mp_publisher->write((void*)&m_Hello);
         return true;
     }

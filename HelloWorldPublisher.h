@@ -35,10 +35,13 @@ public:
 	virtual ~HelloWorldPublisher();
 	//!Initialize
 	bool init(const char* filename);
+	bool init(unsigned long index , std::string message);
+
 	//!Publish a sample
 	bool publish(bool waitForListener = true);
 	//!Run for number samples
 	void run(uint32_t number, uint32_t sleep);
+	void run();
 private:
 	HelloWorld m_Hello;
 	eprosima::fastrtps::Participant* mp_participant;
@@ -54,6 +57,7 @@ private:
         bool firstConnected;
 	}m_listener;
 	void runThread(uint32_t number, uint32_t sleep);
+	void runnThread(uint32_t number, uint32_t sleep);
 	HelloWorldPubSubType m_type;
 };
 
