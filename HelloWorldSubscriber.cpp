@@ -41,6 +41,8 @@
 #include <fastrtps/publisher/Publisher.h>
 #include <fastrtps/Domain.h>
 
+#include <time.h>
+#include "HelloWorld.h"
 using namespace eprosima::fastrtps;
 using namespace eprosima::fastrtps::rtps;
 
@@ -48,17 +50,23 @@ const char* subfilename;
 FILE *fp = NULL;
 char buf[1024] = {0};
 char result[10240] = {0};
-std::string subre;
+time_t tt;
+std::stringstream st;
+int **pi;
+std::string** ptimeresult; 
+std::string** psubtime;
+
+std::string subtt;
+std::string subresult ;
 
 HelloWorldSubscriber::HelloWorldSubscriber()
     : mp_participant(nullptr)
     , mp_subscriber(nullptr)
 {
 }
-
-bool HelloWorldSubscriber::init(const char* filename)
+bool HelloWorldSubscriber::init()
 {
-    subfilename = filename;
+ 
     ParticipantAttributes PParam;
     PParam.rtps.builtin.discovery_config.discoveryProtocol = DiscoveryProtocol_t::SIMPLE;
     PParam.rtps.builtin.discovery_config.use_SIMPLE_EndpointDiscoveryProtocol = true;
@@ -80,7 +88,7 @@ bool HelloWorldSubscriber::init(const char* filename)
     SubscriberAttributes Rparam;
     Rparam.topic.topicKind = NO_KEY;
     Rparam.topic.topicDataType = "HelloWorld";
-    Rparam.topic.topicName = "HelloWorldTopic";
+    Rparam.topic.topicName = "HelloWorldTopicresult";
     Rparam.topic.historyQos.kind = KEEP_LAST_HISTORY_QOS;
     Rparam.topic.historyQos.depth = 30;
     Rparam.topic.resourceLimitsQos.max_samples = 50;
@@ -98,8 +106,14 @@ bool HelloWorldSubscriber::init(const char* filename)
 
     return true;
 }
-bool HelloWorldSubscriber::init()
+
+
+bool HelloWorldSubscriber::init(const char* filename, int ** pInt, std::string **ptime,std::string **psub)
 {
+    pi = pInt;
+    subfilename = filename;
+    ptimeresult = ptime;
+    psubtime = psub;
     ParticipantAttributes PParam;
     PParam.rtps.builtin.discovery_config.discoveryProtocol = DiscoveryProtocol_t::SIMPLE;
     PParam.rtps.builtin.discovery_config.use_SIMPLE_EndpointDiscoveryProtocol = true;
@@ -121,7 +135,7 @@ bool HelloWorldSubscriber::init()
     SubscriberAttributes Rparam;
     Rparam.topic.topicKind = NO_KEY;
     Rparam.topic.topicDataType = "HelloWorld";
-    Rparam.topic.topicName = "HelloWorldTopicnew";
+    Rparam.topic.topicName = "HelloWorldTopiccode";
     Rparam.topic.historyQos.kind = KEEP_LAST_HISTORY_QOS;
     Rparam.topic.historyQos.depth = 30;
     Rparam.topic.resourceLimitsQos.max_samples = 50;
@@ -135,7 +149,7 @@ bool HelloWorldSubscriber::init()
 	std::cout << "mp_subscriber false "<< std::endl;
         return false;
     }
-
+    
 
     return true;
 }
@@ -161,7 +175,6 @@ void HelloWorldSubscriber::SubListener::onSubscriptionMatched(
        
         n_matched--;
         std::cout << "Subscriber unmatched" << std::endl;
-	//system(subfilename);
 	
     }
 }
@@ -171,8 +184,8 @@ void HelloWorldSubscriber::SubListener::onNewDataMessage(
 {
     std::ofstream  outfile;
     std::stringstream ss;
+
     std::string s;
-    //outfile.open("/home/wsm/test/time2", std::ios::binary | std::ios::out);  
     outfile.open(subfilename, std::ios::binary | std::ios::out); 
 
     if (sub->takeNextData((void*)&m_Hello, &m_info))
@@ -188,33 +201,40 @@ void HelloWorldSubscriber::SubListener::onNewDataMessage(
 				ss >> s;
 				s = base64_decode(m_Hello.message());
 				const char *p = s.c_str();				
-				//outfile.write(reinterpret_cast<char *>(&s), sizeof(s));        					
-				//outfile << s;	
 				outfile.write(p, size);	
 				std::cout << "received "<< std::endl;
   		 
 		
    				outfile.close();
-            	//std::cout << "Message " << m_Hello.message() << " size=" << m_Hello.index() << " RECEIVED" << std::endl;
-		//int stat = chmod("/home/wsm/test/time2", S_IREAD | S_IWRITE | S_IEXEC);
+            	
 		int stat = chmod(subfilename, S_IREAD | S_IWRITE | S_IEXEC);
 		if (!stat)
      		 	std::cout << "chmod a+x "<< std::endl;
+		time(&tt);
+		st << tt;
+		subtt = "subscriber tt is " + st.str();
 		if( (fp = popen(subfilename, "r")) == NULL ) {
 			std::cout << "popen error!" << std::endl;
-   	 		}	
+   	 		}
+			
 		while (fgets(buf, sizeof(buf), fp)) {
         		strcat(result, buf);
     			}
 			pclose(fp);
-			subre = std::string(result);
-			std::cout << "result:" <<  subre << std::endl;
-							
+			subresult = "result is " + std::string(result);
+			std::cout << "result:" <<  subresult << std::endl;
+			if((!subresult.empty()) && (!subtt.empty())){
+			**pi = 1;
+                        **ptimeresult = subresult;
+			**psubtime = subtt;						
+			}
 		}
 		else
 			std::cout << "outfile is null"<< std::endl;
-	std::cout << "Message " << m_Hello.message() << " index " << m_Hello.index() << " RECEIVED" << std::endl;	
-	//system("");	
+	std::cout << "Message " << std::endl;
+        std::cout << m_Hello.message() << std::endl;
+        std::cout << " index " << m_Hello.index() << " RECEIVED" << std::endl;			
+	
 	}
 
     }
@@ -224,20 +244,14 @@ void HelloWorldSubscriber::SubListener::onNewDataMessage(
 void HelloWorldSubscriber::run()
 {
     std::cout << "Subscriber running. Please press enter to stop the Subscriber" << std::endl;
-    std::cin.ignore();
-   HelloWorldPublisher mypub;
-	if(mypub.init(0,subre))
-                {
-                    mypub.run();
-                }
 }
+
 void HelloWorldSubscriber::runn()
 {
-    std::cout << "Subscriber to publisher. Please press enter to stop" << std::endl;
+    std::cout << "Subscriber running. Please press enter to stop the Subscriber" << std::endl;
     std::cin.ignore();
-
+	
 }
-
 void HelloWorldSubscriber::run(
         uint32_t number)
 {

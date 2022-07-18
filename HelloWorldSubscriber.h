@@ -39,8 +39,8 @@ public:
     HelloWorldSubscriber();
     virtual ~HelloWorldSubscriber();
     //!Initialize the subscriber
-    bool init(const char* filename);
     bool init();
+    bool init(const char* filename,int ** pInt, std::string **ptime,std::string **psub);
     //!RUN the subscriber
     void run();
     void runn();

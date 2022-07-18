@@ -26,6 +26,10 @@
 using namespace eprosima;
 using namespace fastrtps;
 using namespace rtps;
+
+static int i =0;
+static std::string timeresult;
+static std::string subtime;
 int main(int argc, char** argv)
 {
     std::cout << "Starting "<< std::endl;
@@ -74,14 +78,42 @@ int main(int argc, char** argv)
                 {
                     mypub.run(count, sleep);
                 }
+		HelloWorldSubscriber sub;
+	       if(sub.init())
+               {
+		        sub.runn();
+               }
                 break;
             }
         case 2:
             {
-                HelloWorldSubscriber mysub;
-                if(mysub.init(subfile))
+		
+                HelloWorldSubscriber mysub;          
+	        int *pi = &i;
+		std::string *ptime = &timeresult;
+		std::string *psub = &subtime;
+
+		 if(mysub.init(subfile,&pi,&ptime,&psub))
                 {
+		
 		        mysub.run();
+                }
+		while(1)
+                {
+			std::this_thread::sleep_for(std::chrono::milliseconds(sleep));
+			std::cout << " sleep " << sleep << std::endl;
+			if (i==1) {
+				std::cout<<"found"<<i<<std::endl;
+				std::cout<<timeresult<<std::endl;
+				std::cout<<subtime<<std::endl;
+				break;
+			}
+		}
+		HelloWorldPublisher mypub;
+		std::string mess = timeresult + subtime;
+                if(mypub.init(mess))
+                {
+                    mypub.run(1,100);
                 }
                 break;
             }
