@@ -1,0 +1,7 @@
+/home/wsm/test/zlibdemo/build/CMakeFiles/install/strip.dir
+/home/wsm/test/zlibdemo/build/CMakeFiles/install/local.dir
+/home/wsm/test/zlibdemo/build/CMakeFiles/HelloWorldExample.dir
+/home/wsm/test/zlibdemo/build/CMakeFiles/edit_cache.dir
+/home/wsm/test/zlibdemo/build/CMakeFiles/rebuild_cache.dir
+/home/wsm/test/zlibdemo/build/CMakeFiles/install.dir
+/home/wsm/test/zlibdemo/build/CMakeFiles/list_install_components.dir
